@@ -1,0 +1,17 @@
+﻿[
+	{ id: "finance", text: "财务管理"},
+	{ id: "pay_detail", pid: "finance", text: "支出明细", iconCls: "zhichu", url: "finance/finance_detail?type=1", iconPosition: "top" },
+	{ id: "pay_statistic", pid: "finance", text: "支出统计", iconCls: "ztong", url: "finance/finance_statistic?type=1", iconPosition: "top" },
+	{ id: "income_detail", pid: "finance", text: "收入明细", iconCls: "shouru", url: "finance/finance_detail?type=2", iconPosition: "top" },
+	{ id: "income_inline_detail", pid: "finance", text: "收入明细(按年)", iconCls: "shouru", url: "finance/finance_inline_detail?type=2", iconPosition: "top" },
+	{ id: "income_statistic", pid: "finance", text: "收入统计", iconCls: "stong", url: "finance/finance_statistic?type=2", iconPosition: "top" },
+	{ id: "gift_detail", pid: "finance", text: "礼金明细", iconCls: "lijin", url: "finance/finance_detail?type=3", iconPosition: "top" },
+	{ id: "gift_inline_detail", pid: "finance", text: "礼金明细(按年)", iconCls: "shouru", url: "finance/finance_inline_detail?type=3", iconPosition: "top" },
+	{ id: "gift_statistic", pid: "finance", text: "礼金统计", iconCls: "ltong", url: "finance/finance_statistic?type=3", iconPosition: "top" },
+	{ id: "jieyu", pid: "finance", text: "结余", iconCls: "jieyu", url: "finance/jieyu", iconPosition: "top" },
+
+	{ id: "user", text: "用户管理", iconCls: "icon-add"},
+	{ id: "addUser", pid: "user", text: "增加用户", iconCls: "icon-add", url: "../datagrid/celledit.html" },
+	{ id: "editUser", pid: "user", text: "修改用户", iconCls: "icon-edit", url: "../datagrid/rowedit.html" },
+	{ id: "removeUser", pid: "user", text: "删除用户", iconCls: "icon-remove", url: "../datagrid/datagrid.html" }
+]

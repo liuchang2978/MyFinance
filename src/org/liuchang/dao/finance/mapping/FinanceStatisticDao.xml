@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.liuchang.dao.finance.IFinanceStatisticDao">
+
+    <select id="getTitle" resultType="map" parameterType="String">
+        SELECT CONCAT('0',ID) AS ID,NAME FROM TYPE
+        <where>
+            <choose>
+                <when test="type == 1">
+                    TYPE_NAME = '支出'
+                </when>
+                <when test="type == 2">
+                    TYPE_NAME = '收入'
+                </when>
+                <otherwise>
+                    NAME LIKE '礼金%'
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getData" resultType="map" parameterType="String">
+    SELECT
+        MONTH,
+        (CASE WHEN TYPE = (SELECT ID FROM TYPE WHERE NAME LIKE '礼金%' AND TYPE_NAME = '支出') THEN -SUM(MONEY) ELSE SUM(MONEY) END ) AS MONEY,
+        CONCAT('0',TYPE) AS TYPE
+    FROM
+        (
+            SELECT
+                DATE_FORMAT(DATE, '%Y-%m') MONTH,
+                MONEY,
+                TYPE
+            FROM
+                PAY
+            WHERE
+                TYPE IN (
+                    SELECT
+                        ID
+                    FROM
+                        TYPE
+                    WHERE
+                        <choose>
+                            <when test="type == 1">
+                                TYPE_NAME = '支出'
+                            </when>
+                            <when test="type == 2">
+                                TYPE_NAME = '收入'
+                            </when>
+                            <otherwise>
+                                NAME LIKE '礼金%'
+                            </otherwise>
+                        </choose>
+                )
+        ) T
+    GROUP BY
+        MONTH,
+        TYPE
+    ORDER BY
+        MONTH DESC
+    </select>
+
+    <select id="selectDataTotal" resultType="map" parameterType="String">
+        SELECT
+        (CASE WHEN TYPE = (SELECT ID FROM TYPE WHERE NAME LIKE '礼金%' AND TYPE_NAME = '支出') THEN -SUM(MONEY) ELSE SUM(MONEY) END ) AS MONEY,
+          CONCAT('0',TYPE) AS TYPE
+        FROM
+          (
+            SELECT
+              DATE_FORMAT(DATE, '%Y-%m') MONTH,
+              MONEY,
+              TYPE
+            FROM
+              PAY
+            WHERE
+              TYPE IN (
+                SELECT
+                  ID
+                FROM
+                  TYPE
+                WHERE
+                    <choose>
+                        <when test="type == 1">
+                            TYPE_NAME = '支出'
+                        </when>
+                        <when test="type == 2">
+                            TYPE_NAME = '收入'
+                        </when>
+                        <otherwise>
+                            NAME LIKE '礼金%'
+                        </otherwise>
+                    </choose>
+              )
+          ) T
+        GROUP BY
+          TYPE
+
+    </select>
+
+    <select id="getDetail" resultType="org.liuchang.bean.finance.PayVO" parameterType="String">
+        SELECT
+        P.ID AS ID,
+        P.NAME AS NAME,
+        P.MONEY AS MONEY,
+        P.TYPE AS TYPE,
+        (SELECT NAME
+        FROM TYPE T
+        WHERE P.TYPE = T.ID) AS TYPE_NAME,
+        P.DATE AS DATE
+        FROM
+        PAY P
+        WHERE
+        TYPE = #{id}
+        AND DATE_FORMAT(DATE, '%Y-%m')= #{month}
+        ORDER BY
+        DATE
+    </select>
+
+</mapper>

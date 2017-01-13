@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.liuchang.dao.finance.IJieyuDao">
+
+    <select id="getData" resultType="org.liuchang.bean.finance.JieyuVO">
+    SELECT
+        ZDATE AS DATE,
+        ZHICHU,
+        SHOURU,
+        SHOURU - ZHICHU AS JIEYU
+    FROM
+        (
+            SELECT
+                DATE_FORMAT(DATE, '%Y-%m') ZDATE,
+                SUM(MONEY) ZHICHU
+            FROM
+                PAY
+            WHERE
+                TYPE IN (
+                    SELECT
+                        ID
+                    FROM
+                        TYPE
+                    WHERE
+                        TYPE_NAME = '支出'
+                )
+            GROUP BY
+                ZDATE
+        ) P
+        JOIN (
+            SELECT
+                DATE_FORMAT(DATE, '%Y-%m') SDATE,
+                SUM(MONEY) SHOURU
+            FROM
+                PAY
+            WHERE
+                TYPE IN (
+                    SELECT
+                        ID
+                    FROM
+                        TYPE
+                    WHERE
+                        TYPE_NAME = '收入'
+                )
+            GROUP BY
+                SDATE
+        ) I ON P.ZDATE = I.SDATE
+    ORDER BY
+        P.ZDATE DESC
+    </select>
+
+
+    <select id="getDataTotal" resultType="org.liuchang.bean.finance.JieyuVO">
+    SELECT
+        '合计' AS DATE,
+        SUM(ZHICHU) AS ZHICHU,
+        SUM(SHOURU) AS SHOURU,
+        SUM(SHOURU) - SUM(ZHICHU) AS JIEYU
+    FROM
+        (
+            SELECT
+                DATE_FORMAT(DATE, '%Y-%m') ZDATE,
+                SUM(MONEY) ZHICHU
+            FROM
+                PAY
+            WHERE
+                TYPE IN (
+                    SELECT
+                        ID
+                    FROM
+                        TYPE
+                    WHERE
+                        TYPE_NAME = '支出'
+                )
+            GROUP BY
+                ZDATE
+        ) P
+        JOIN (
+            SELECT
+                DATE_FORMAT(DATE, '%Y-%m') SDATE,
+                SUM(MONEY) SHOURU
+            FROM
+                PAY
+            WHERE
+                TYPE IN (
+                    SELECT
+                        ID
+                    FROM
+                        TYPE
+                    WHERE
+                        TYPE_NAME = '收入'
+                )
+            GROUP BY
+                SDATE
+        ) I ON P.ZDATE = I.SDATE
+    </select>
+</mapper>

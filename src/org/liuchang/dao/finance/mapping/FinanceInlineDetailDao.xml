@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.liuchang.dao.finance.IFinanceInlineDetailDao">
+
+    <select id="getData" resultType="map" parameterType="String">
+        SELECT DATE_FORMAT(DATE, '%Y') MONTH
+        FROM PAY
+        WHERE
+        TYPE IN (SELECT ID
+                FROM TYPE
+                <where>
+                    <choose>
+                        <when test="type == 1">
+                            AND TYPE_NAME = '支出'
+                        </when>
+                        <when test="type == 2">
+                            AND TYPE_NAME = '收入'
+                        </when>
+                        <otherwise>
+                            AND NAME LIKE '礼金%'
+                        </otherwise>
+                    </choose>
+                </where>)
+        GROUP BY MONTH
+        ORDER BY MONTH DESC
+    </select>
+
+    <select id="getInlineData" parameterType="org.liuchang.bean.finance.SearchData" resultType="org.liuchang.bean.finance.PayVO" >
+        SELECT
+            P.ID    AS ID,
+            P.NAME  AS NAME,
+            P.MONEY AS MONEY,
+            P.TYPE  AS TYPE,
+            T.NAME  AS TYPE_NAME,
+            P.DATE  AS DATE
+        FROM PAY P JOIN TYPE T ON P.TYPE = T.ID
+        <where>
+            <choose>
+                <when test="page_type == 1">
+                    AND T.TYPE_NAME = '支出'
+                </when>
+                <when test="page_type == 2">
+                    AND T.TYPE_NAME = '收入'
+                </when>
+                <otherwise>
+                    AND T.NAME LIKE '礼金%'
+                </otherwise>
+            </choose>
+            AND DATE_FORMAT(P.DATE, '%Y') = #{startTime}
+        </where>
+        ORDER BY DATE DESC
+    </select>
+
+    <update id="modifyData" parameterType="org.liuchang.bean.finance.PayVO">
+        UPDATE PAY
+          SET NAME = #{name}, MONEY = #{money}, TYPE = #{type}, DATE = #{date}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delData" parameterType="String">
+        DELETE FROM PAY WHERE ID = #{id}
+    </delete>
+
+</mapper>

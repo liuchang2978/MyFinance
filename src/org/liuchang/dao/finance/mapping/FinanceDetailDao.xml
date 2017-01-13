@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.liuchang.dao.finance.IFinanceDetailDao">
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM TYPE
+    </select>
+
+    <select id="getData" resultType="org.liuchang.bean.finance.PayVO" parameterType="org.liuchang.bean.finance.SearchData">
+        SELECT
+            P.ID    AS ID,
+            P.NAME  AS NAME,
+            <choose>
+                <when test="page_type == 3">
+                    (CASE WHEN TYPE = (SELECT ID FROM TYPE WHERE NAME LIKE '礼金%' AND TYPE_NAME = '支出') THEN -P.MONEY ELSE
+                    P.MONEY END) AS MONEY
+                </when>
+                <otherwise>
+                    P.MONEY AS MONEY
+                </otherwise>
+            </choose>,
+            P.TYPE  AS TYPE,
+            T.NAME  AS TYPE_NAME,
+            P.DATE  AS DATE
+        FROM PAY P JOIN TYPE T ON P.TYPE = T.ID
+        <where>
+            <if test="type != null and type != ''">
+                AND P.TYPE = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND P.NAME LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <choose>
+                <when test="page_type == 1">
+                    AND T.TYPE_NAME = '支出'
+                    AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                </when>
+                <when test="page_type == 2">
+                    AND T.TYPE_NAME = '收入'
+                    <if test="is_search == 1">
+                        AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                    </if>
+                </when>
+                <otherwise>
+                    AND T.NAME LIKE '礼金%'
+                    <if test="is_search == 1">
+                        AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY P.DATE DESC
+    </select>
+
+    <select id="getDataTotal" resultType="String" parameterType="org.liuchang.bean.finance.SearchData">
+        SELECT SUM(T.MONEY) FROM
+        (SELECT
+        <choose>
+            <when test="page_type == 3">
+                (CASE WHEN TYPE = (SELECT ID FROM TYPE WHERE NAME LIKE '礼金%' AND TYPE_NAME = '支出') THEN -P.MONEY ELSE
+                P.MONEY END) AS MONEY
+            </when>
+            <otherwise>
+                P.MONEY AS MONEY
+            </otherwise>
+        </choose>
+        FROM PAY P JOIN TYPE T ON P.TYPE = T.ID
+        <where>
+            <if test="type != null and type != ''">
+                AND P.TYPE = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND P.NAME LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <choose>
+                <when test="page_type == 1">
+                    AND T.TYPE_NAME = '支出'
+                    AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                </when>
+                <when test="page_type == 2">
+                    AND T.TYPE_NAME = '收入'
+                    <if test="is_search == 1">
+                        AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                    </if>
+                </when>
+                <otherwise>
+                    AND T.NAME LIKE '礼金%'
+                    <if test="is_search == 1">
+                        AND P.DATE BETWEEN #{startTime} AND #{endTime}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>) T
+    </select>
+
+    <insert id="addData" parameterType="org.liuchang.bean.finance.PayVO">
+        INSERT INTO PAY (NAME, MONEY, TYPE, DATE) VALUES (#{name}, #{money}, #{type}, #{date})
+    </insert>
+
+    <update id="modifyData" parameterType="org.liuchang.bean.finance.PayVO">
+        UPDATE PAY
+          SET NAME = #{name}, MONEY = #{money}, TYPE = #{type}, DATE = #{date}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="delData" parameterType="String">
+        DELETE FROM PAY WHERE ID = #{id}
+    </delete>
+
+</mapper>
